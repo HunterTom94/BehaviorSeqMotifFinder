@@ -1,4 +1,4 @@
-from Encoder import seq_gen, behavior_code_gen, behavior_decoder
+from Encoder import seq_gen, behavior_code_gen, behavior_decoder, behavior_names, digits_of_hexdec
 from ClipCutter import clip_gen
 import itertools
 import time
@@ -10,7 +10,6 @@ import pandas as pd
 from openpyxl import load_workbook
 
 condition_name = ['Or47b', 'WT']
-behavior_names = ['chase', 'reorient', 'search', 'sing', 'stay close', 'still', 'touch', 'walk', 'other']
 
 
 def segment_finder(seq, behavior_code, mode='loop', length=2):
@@ -158,11 +157,14 @@ def pattern_clips(seq, condition=0, behavior_ind=1, behavior_overlap=0, pattern_
             if m_start:
                 for m_ind in range(len(m_start)):
                     for segment_piece_ind in range(len(item[0])):
-                        segment_piece_length[repeat_ind,segment_piece_ind] = data_len[condition][video][int(m_start[m_ind]/3 + segment_piece_ind)]
+                        segment_piece_length[repeat_ind, segment_piece_ind] = data_len[condition][video][
+                            int(m_start[m_ind] / (digits_of_hexdec + 1) + segment_piece_ind)]
                     repeat_ind += 1
-                    pattern_length = ((m_end[m_ind] + 1) - m_start[m_ind]) / 3
-                    clip_start = data_cum_len[condition][video][int(m_start[m_ind] / 3)]  # matlab index
-                    clip_end = data_cum_len[condition][video][int(m_start[m_ind] / 3 + pattern_length)]  # matlab index
+                    pattern_length = ((m_end[m_ind] + 1) - m_start[m_ind]) / (digits_of_hexdec + 1)
+                    clip_start = data_cum_len[condition][video][
+                        int(m_start[m_ind] / (digits_of_hexdec + 1))]  # matlab index
+                    clip_end = data_cum_len[condition][video][
+                        int(m_start[m_ind] / (digits_of_hexdec + 1) + pattern_length)]  # matlab index
                     video_obj_arr[video, m_ind] = np.arange(clip_start, clip_end)
         print([int(round(x)) for x in np.mean(segment_piece_length, axis=0)])
         unique_segment_obj_arr[idx, 0] = video_obj_arr
@@ -188,7 +190,7 @@ if __name__ == "__main__":
     #     pickle.dump(seq, f)
     # exit()
     start = time.time()
-    save = 1
+    save = 0
     clip = 0
     with open('saved_seq', 'rb') as f:
         sequence = pickle.load(f)

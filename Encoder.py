@@ -4,17 +4,21 @@ import numpy as np
 import math
 import re
 
-behavior_names = ['chase', 'reorient', 'search', 'sing', 'stay close', 'still', 'touch', 'walk', 'other']
+behavior_names = ['chase', 'reorient', 'search', 'sing', 'stay close', 'still', 'touch', 'walk', 'water', 'other']
+behavior_num = len(behavior_names) - 1
+digits_of_hexdec = int(np.ceil(math.log(np.power(2, behavior_num), 16)))
+hexdec_format_arg = '0' + str(digits_of_hexdec) + 'X'
 
 
-def behavior_decoder(hex,out_format = 'name'):
-    bin = format(int(hex, 16), "08b")
+def behavior_decoder(hex, out_format='name'):
+    format_arg = '0' + str(behavior_num) + 'b'
+    bin = format(int(hex, 16), format_arg)
     ind_ls = []
-    if bin != '00000000':
+    if bin != '0' * behavior_num:
         for m in re.finditer('1', bin):
             ind_ls.append(m.start())
     else:
-        ind_ls = [8]
+        ind_ls = [behavior_num]
     if out_format == 'name':
         behavior = [behavior_names[ind] for ind in ind_ls]
         return behavior
@@ -24,20 +28,20 @@ def behavior_decoder(hex,out_format = 'name'):
 
 def behavior_code_gen(behavior_ind, overlap=0):
     if overlap:
-        temp_ls = [format(x, '07b') for x in range(int(math.pow(2, 7)))]
+        bi_format_arg = '0' + str(behavior_num - 1) + 'b'
+        temp_ls = [format(x, bi_format_arg) for x in range(int(math.pow(2, (behavior_num - 1))))]
         ls = [x[:behavior_ind] + '1' + x[behavior_ind:] for x in temp_ls]
-        hex_ls = [format(int(x, 2), "02X") for x in ls]
+        hex_ls = [format(int(x, 2), hexdec_format_arg) for x in ls]
     else:
-        temp_ls = '0000000'
+        temp_ls = '0' * (behavior_num - 1)
         ls = temp_ls[:behavior_ind] + '1' + temp_ls[behavior_ind:]
-        hex_ls = format(int(ls, 2), "02X")
+        hex_ls = format(int(ls, 2), hexdec_format_arg)
     return hex_ls
 
 
 def seq_gen():
     condition_num = 2
     video_num = 19
-    behavior_num = 8
 
     temp_data = loadmat('data.mat')
     data = [0] * condition_num
@@ -58,7 +62,7 @@ def seq_gen():
             for frame_ind in range(temp_data['video_data'][condition][0][0][video].shape[1]):
                 temp_str = "".join(str(x) for x in temp_data['video_data'][condition][0][0][video][
                     range(behavior_num), frame_ind].tolist())
-                data[condition][video][frame_ind] = format(int(temp_str, 2), "02X")
+                data[condition][video][frame_ind] = format(int(temp_str, 2), hexdec_format_arg)
             run_length = [[val, len([*thing])] for val, thing in groupby(data[condition][video])]
             data_no_repeat[condition][video] = [x[0] for x in run_length]
             data_no_repeat_len[condition][video] = [x[1] for x in run_length]
@@ -66,5 +70,6 @@ def seq_gen():
             data_no_repeat_cum_len[condition][video].insert(0, 1)
             data_no_repeat_cum_len[condition][video] = np.cumsum(data_no_repeat_cum_len[condition][video])
             data_no_repeat_str[condition][video] = ' '.join([str(x) for x in data_no_repeat[condition][video]])
-    output = {'ls': data_no_repeat, 'len': data_no_repeat_len,'cum_len': data_no_repeat_cum_len, 'str': data_no_repeat_str}
+    output = {'ls': data_no_repeat, 'len': data_no_repeat_len, 'cum_len': data_no_repeat_cum_len,
+              'str': data_no_repeat_str}
     return output

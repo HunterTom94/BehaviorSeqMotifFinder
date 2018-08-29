@@ -1,5 +1,3 @@
-# for behavioral transition matrix
-
 import motmot.FlyMovieFormat.FlyMovieFormat as FMF
 import motmot.fview as fview
 import sys
@@ -8,7 +6,6 @@ import scipy.io as sio
 
 
 def clip_gen(clips_log, clip_ind=[]):
-    # clips_log = r'Z:\April\JAABA\Experiments\CS\transition_clips\clips.mat'
     if 'WT' in clips_log:
         dirc_log = r'Z:\April\JAABA\Experiments\test\WT_dirc.mat'
         mat_contents = sio.loadmat(clips_log)
@@ -32,9 +29,9 @@ def clip_gen(clips_log, clip_ind=[]):
 
     for j in clip_no:
         if 'WT' in clips_log:
-            fname_2 = 'Z:\April\JAABA\Experiments\CS\\transition_clips\WT\\' + ''.join(log[j, 1]) + '.fmf'
+            fname_2 = 'Z:\April\JAABA\Experiments\CS_transition_clips\WT\\' + ''.join(log[j, 1]) + '.fmf'
         elif 'Or47b' in clips_log:
-            fname_2 = 'Z:\April\JAABA\Experiments\CS\\transition_clips\or47b\\' + ''.join(log[j, 1]) + '.fmf'
+            fname_2 = 'Z:\April\JAABA\Experiments\CS_transition_clips\or47b\\' + ''.join(log[j, 1]) + '.fmf'
 
         fmf_saver = FMF.FlyMovieSaver(fname_2)  # save each video based on clip name
 
